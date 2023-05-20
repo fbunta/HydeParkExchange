@@ -44,8 +44,11 @@ namespace hpx {
 				root->push(incoming_order);
 			}
 		}
-		bool search(int key) const {
-			return search(key, root.get());
+		void cancel(float price, int order_id) {
+			level_queue* lq = search(price, root.get());
+			if (lq != nullptr) {
+				lq->pop(order_id);
+			}
 		}
 
 	private:
@@ -74,7 +77,7 @@ namespace hpx {
 				leaf.push(incoming_order);
 			}
 		}
-		bool search(float price, level_queue* leaf) const {
+		level_queue* search(float price, level_queue* leaf) const {
 			if (leaf)
 			{
 				if (price == leaf->price)
@@ -84,7 +87,7 @@ namespace hpx {
 				else
 					return search(price, leaf->right.get());
 			}
-			else return false;
+			else return nullptr;
 		}
 
 		unique_ptr<level_queue> root;

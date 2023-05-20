@@ -1,5 +1,7 @@
 #ifndef ORDER_H
 #	define ORDER_H
+#include "order_id_singleton.h"
+using hpx::order_id_singleton;
 
 namespace hpx {
 
@@ -15,7 +17,8 @@ namespace hpx {
 	};
 
 	enum class OrderStatus {
-		Open,
+		Inactive,
+		Active,
 		Filled,
 		Cancelled
 	};
@@ -32,13 +35,14 @@ namespace hpx {
 		order(OrderType type, OrderSide side, int qty, float price) {
 			type_ = type;
 			side_ = side;
-			status_ = OrderStatus::Open;
+			status_ = OrderStatus::Inactive;
 			quantity_ = qty;
 			price_ = price;
-			order_id_ = 0; // TODO
+			order_id_ = singleton->get_new_order_id();
 			user_id_ = 0; // TODO
 		}
-		//virtual void work_order() = 0;
+	private:
+		order_id_singleton* singleton = order_id_singleton::get_instance(1);
 	};
 
 	struct market_order : public order {

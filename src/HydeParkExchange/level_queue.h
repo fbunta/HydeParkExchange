@@ -40,7 +40,7 @@ namespace hpx {
             if (head == nullptr) {
                 throw std::invalid_argument("cannot pop order from empty level");
             }
-            order p = head->value; // get head value to return
+            order head_order = head->value; // get head value to return
             this->head = head->next; // set new head to old heads next
             if (this->head != nullptr) {
                 this->head->prev = nullptr; // set new head prev to null so memory gets released
@@ -48,14 +48,35 @@ namespace hpx {
             else {
                 tail = nullptr; // if we have no head then the tail needs to be cleaned up
             }
-            return p;
+            head_order.status_ = OrderStatus::Filled;
+            return head_order;
         };
 
-        //T pop(int) { // for cancellations this pops from the middle of the queue 
-        //    std::unique_lock<std::mutex> lock(mtx);
-        //};
+        order pop(int order_id) { // for cancellations this pops from the middle of the queue 
+            const std::lock_guard<std::mutex> lock(mtx);
+            if (head == nullptr) {
+                throw std::invalid_argument("nothing to cancel");
+            }
+            std::shared_ptr<queue_item> item_to_check = head;
+            while (item_to_check != nullptr)
+            {
+                if (item_to_check->value.order_id_ == order_id)
+                {
+                    item_to_check->next->prev = item_to_check->prev;
+                    item_to_check->prev->next = item_to_check->next;
+                    item_to_check->next = nullptr;
+                    item_to_check->prev = nullptr;
+                    order cancelled_order = item_to_check->value;
+                    cancelled_order.status_ = OrderStatus::Cancelled;
+                    return cancelled_order;
+                }
+                else {
+                    item_to_check = item_to_check->next;
+                }
+            }
+        };
 
-        void push(order const& item) { // always push to the tail of the queue
+        void push(order& item) { // always push to the tail of the queue
             const std::lock_guard<std::mutex> lock(mtx);
             std::shared_ptr<queue_item> new_item = std::make_shared<queue_item>(item);
             if (tail != nullptr) {
@@ -66,12 +87,13 @@ namespace hpx {
                 head = new_item; // we dont have a head yet so set it here
             }
             tail = new_item; // set this item as new tail
+            item.status_ = OrderStatus::Active;
         };
 
         struct queue_item {
             // the "next" item gets popped out right after a given item
             // the "previous" item gets popped out right before a given item
-            queue_item(order x) : prev(nullptr), next(nullptr), value(x) {}
+            queue_item(order& x) : prev(nullptr), next(nullptr), value(x) {}
             std::shared_ptr<queue_item> prev; // if prev is nullptr then we assume this item is the head
             std::shared_ptr<queue_item> next; // if next is nullptr then we assume this is the tail
             order value; // this will be the order object

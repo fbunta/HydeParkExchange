@@ -52,6 +52,8 @@ namespace hpx {
 		unique_ptr<order> order_6(factory->create<ioc_order>(OrderSide::Buy, 4, 12.3));
 		q.insert(*order_6);
 
+		q.cancel(order_2->price_, order_2->order_id_);
+
 	}
 
 	void send_orders_2(level_btree& q) {
