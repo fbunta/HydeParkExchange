@@ -1,26 +1,46 @@
-#ifndef LOCK_QUEUE_H
-#  define LOCK_QUEUE_H
+#ifndef LEVEL_QUEUE_H
+#  define LEVEL_QUEUE_H
 #include <memory>
 #include <mutex>
 #include <condition_variable>
+#include "order.h";
+
+using std::unique_ptr;
+using std::shared_ptr;
+using std::make_unique;
 
 namespace hpx {
-
-
-    template<typename T> // requires numeric type trait
-    class ex_queue {
+    //template<typename T> // requires numeric type trait
+    class level_queue {
     public:
-        ex_queue() {
-            head = nullptr;
-            tail = nullptr;
-        };
+        level_queue(float price) : price(price) {}
+
+        level_queue(level_queue const& other) : price(other.price) {
+            if (other.left)
+                left = make_unique<level_queue>(*other.left);
+            if (other.right)
+                right = make_unique<level_queue>(*other.right);
+        }
         
-        T pop() { // pops from the head of the queue
+        level_queue& operator=(level_queue const& other) {
+            price = other.price;
+            if (other.left)
+                left = make_unique<level_queue>(*other.left);
+            if (other.right)
+                right = make_unique<level_queue>(*other.right);
+            return *this;
+        }
+
+        float price;
+        unique_ptr<level_queue> left;
+        unique_ptr<level_queue> right;
+        
+        order pop() { // pops from the head of the queue
             const std::lock_guard<std::mutex> lock(mtx);
             if (head == nullptr) {
-                return 0; // need something else here
+                throw std::invalid_argument("cannot pop order from empty level");
             }
-            T p = head->value; // get head value to return
+            order p = head->value; // get head value to return
             this->head = head->next; // set new head to old heads next
             if (this->head != nullptr) {
                 this->head->prev = nullptr; // set new head prev to null so memory gets released
@@ -35,7 +55,7 @@ namespace hpx {
         //    std::unique_lock<std::mutex> lock(mtx);
         //};
 
-        void push(T const& item) { // always push to the tail of the queue
+        void push(order const& item) { // always push to the tail of the queue
             const std::lock_guard<std::mutex> lock(mtx);
             std::shared_ptr<queue_item> new_item = std::make_shared<queue_item>(item);
             if (tail != nullptr) {
@@ -51,17 +71,17 @@ namespace hpx {
         struct queue_item {
             // the "next" item gets popped out right after a given item
             // the "previous" item gets popped out right before a given item
-            queue_item(T x) : prev(nullptr), next(nullptr), value(x) {}
+            queue_item(order x) : prev(nullptr), next(nullptr), value(x) {}
             std::shared_ptr<queue_item> prev; // if prev is nullptr then we assume this item is the head
             std::shared_ptr<queue_item> next; // if next is nullptr then we assume this is the tail
-            T value; // this will be the order object
+            order value; // this will be the order object
         };
 
     private:
         std::mutex mtx;
         std::condition_variable cv;
-        std::shared_ptr<queue_item> head;
-        std::shared_ptr<queue_item> tail;
+        shared_ptr<queue_item> head;
+        shared_ptr<queue_item> tail;
     };
 }
 #endif
