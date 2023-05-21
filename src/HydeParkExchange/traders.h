@@ -31,7 +31,7 @@ using concrete_order_factory = concrete_factory<order_factory,
 
 namespace hpx {
 
-	void send_orders_1(level_btree& q) {
+	void send_orders_1(single_asset_book& q) {
 		unique_ptr<order_factory> factory(make_unique<concrete_order_factory>());
 
 		unique_ptr<order> order_1(factory->create<ioc_order>(OrderSide::Buy, 1, 12.3));
@@ -52,11 +52,11 @@ namespace hpx {
 		unique_ptr<order> order_6(factory->create<ioc_order>(OrderSide::Buy, 4, 12.3));
 		q.insert(*order_6);
 
-		q.cancel(order_2->price_, order_2->order_id_);
+		q.cancel(*order_2);
 
 	}
 
-	void send_orders_2(level_btree& q) {
+	void send_orders_2(single_asset_book& q) {
 		unique_ptr<order_factory> factory(make_unique<concrete_order_factory>());
 
 		unique_ptr<order> order_1(factory->create<ioc_order>(OrderSide::Buy, 1, 12.3));
