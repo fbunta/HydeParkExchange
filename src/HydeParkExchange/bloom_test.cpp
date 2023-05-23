@@ -4,7 +4,7 @@
 
 using namespace std;
 
-int main() {
+int test() {
     BloomFilter<string> securityFilter(1000, 3);
     securityFilter.insert("AAPL");
     securityFilter.insert("MSFT");

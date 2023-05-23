@@ -73,7 +73,7 @@ void parseFixMessage(const std::string &fixMessage) {
   }
 }
 
-int main()
+int main_()
 {
     std::ifstream inputFile("FIX.txt");
     if (!inputFile.is_open()) {
