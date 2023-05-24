@@ -53,7 +53,7 @@ namespace hpx {
 			trading_entity_ = te;
 		}
 
-		void fill(int qty_filled) {
+		void fill_order(int qty_filled) {
 			quantity_ = quantity_ - qty_filled;
 			if (quantity_ == 0) {
 				status_ = OrderStatus::FullFill;

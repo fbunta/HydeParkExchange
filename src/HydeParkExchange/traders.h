@@ -44,10 +44,10 @@ namespace hpx {
 	queue<order> data_queue;
 	condition_variable cond;
 
-	int place_limit_order(unique_ptr<order_factory>& factory, OrderSide side, int qty, double price, TradingEntity entity)
+	int place_limit_order(unique_ptr<order_factory>& factory, OrderSide side,
+		int qty, double price, TradingEntity entity)
 	{
 		unique_ptr<order> order_1(factory->create<limit_order>(side, qty, price, entity));
-		cout << "placing order" << endl;
 		lock_guard lk(m);
 		data_queue.push(*order_1);
 		cond.notify_one();
@@ -63,19 +63,24 @@ namespace hpx {
 			data_queue.pop();
 			lk.unlock();
 			q.insert(data);
-			if (data.order_id_==4) {
+			if (data.order_id_==9) {
 				break;
 			}
 		}
 	}
 
 	void start_exchange_thread(single_asset_book& q) {
-		q.find_fills();
+		q.producer_fills();
+	}
+
+	void start_exchange_listener(single_asset_book& q) {
+		q.consumer_fills();
 	}
 
 	void send_orders_1(single_asset_book& q) {
 		unique_ptr<order_factory> factory(make_unique<concrete_order_factory>());
-		place_limit_order(factory, OrderSide::Buy, 4, 12.0, TradingEntity::Belvedere);	
+		place_limit_order(factory, OrderSide::Buy, 4, 12.0, TradingEntity::Belvedere);
+		place_limit_order(factory, OrderSide::Sell, 4, 12.3, TradingEntity::Belvedere);
 		std::this_thread::sleep_for(milliseconds(30));
 		int order_id = place_limit_order(factory, OrderSide::Buy, 2, 12.1, TradingEntity::Belvedere);
 		std::this_thread::sleep_for(milliseconds(10));
@@ -85,6 +90,7 @@ namespace hpx {
 	void send_orders_2() {
 		unique_ptr<order_factory> factory(make_unique<concrete_order_factory>());
 		place_limit_order(factory, OrderSide::Buy, 5, 12.0, TradingEntity::Wolverine);
+		place_limit_order(factory, OrderSide::Sell, 7, 12.3, TradingEntity::Wolverine);
 		std::this_thread::sleep_for(milliseconds(20));
 		place_limit_order(factory, OrderSide::Buy, 3, 12.1, TradingEntity::Wolverine);
 	}
@@ -93,6 +99,9 @@ namespace hpx {
 		unique_ptr<order_factory> factory(make_unique<concrete_order_factory>());
 		std::this_thread::sleep_for(milliseconds(40));
 		place_limit_order(factory, OrderSide::Sell, 1, 12.1, TradingEntity::Citadel);
+		place_limit_order(factory, OrderSide::Sell, 10, 12.2, TradingEntity::Citadel);
+		place_limit_order(factory, OrderSide::Sell, 15, 12.3, TradingEntity::Citadel);
+		place_limit_order(factory, OrderSide::Sell, 20, 12.4, TradingEntity::Citadel);
 	}
 }
 #endif

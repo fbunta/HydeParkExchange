@@ -68,13 +68,7 @@ namespace hpx {
 
 		void insert(order& incoming_order) {
 			unique_ptr<order> ord = std::make_unique<order>(incoming_order);
-			if (root) {
-				insert(ord, root);
-			}
-			else { // dont think we ever hit this
-				root = make_unique<level_queue>(ord->price_);
-				root->push(ord);
-			}
+			insert(move(ord), root);
 		}
 		
 		void cancel(int order_id, double price) {
@@ -99,15 +93,15 @@ namespace hpx {
 
 
 	private:
-		void insert(unique_ptr<order>& incoming_order, unique_ptr<level_queue>& leaf) {
+		void insert(unique_ptr<order> incoming_order, unique_ptr<level_queue>& leaf) {
 			if (fabs(incoming_order->price_ - leaf->price) < 0.09)
 			{
-				leaf->push(incoming_order);
+				leaf->push(move(incoming_order));
 			}
 			else if (incoming_order->price_ > leaf->price)
 			{
 				if (leaf->right) {
-					insert(incoming_order, leaf->right);
+					insert(move(incoming_order), leaf->right);
 				}
 				else {
 					// outside price bounds
@@ -116,7 +110,7 @@ namespace hpx {
 			}
 			else { // price < left.price_
 				if (leaf->left) {
-					insert(incoming_order, leaf->left);
+					insert(move(incoming_order), leaf->left);
 				}
 				else {
 					// outside price bounds

@@ -5,7 +5,15 @@
 #include<memory>
 #include<iostream>
 #include<algorithm>
+#include <queue>
+#include <mutex>
+#include <utility>
 
+using std::move;
+using std::queue;
+using std::condition_variable;
+using std::unique_lock;
+using std::mutex;
 using std::cout;
 using std::endl;
 using std::unique_ptr;
@@ -23,24 +31,47 @@ namespace hpx {
 
 		void insert(order order) {
 			tree->insert(order);
-		}
+			if (order.side_ == OrderSide::Sell) {
+				cout << "placed order id: "<< order.order_id_ << " Sell " << order.quantity_ << "@" << order.price_ << endl;
+			}
+			else {
+				cout << "placed order id: " << order.order_id_ << " Buy " << order.quantity_ << "@" << order.price_ << endl;
 
-		//void insert(unique_ptr<order>&& order) {
-		//	tree->insert(move(order));
-		//}
+			}
+		}
 
 		void cancel(int order_id, double price) {
 			tree->cancel(order_id, price);
 		}
 
-		void find_fills() {
+		void producer_fills() {
 			while (true) {
 				level_queue* best_bid_queue = tree->get_best_bid();
 				if (best_bid_queue) {
-					best_bid_queue->pop();
+					unique_ptr<fill> f = best_bid_queue->pop();
+					if (f != nullptr) {
+						lock_guard lk(m);
+						data_queue.push(*f);
+						cond.notify_one();
+						break;
+					}
+				}
+			}
+		}
+
+		void consumer_fills()
+		{
+			while (true) {
+				unique_lock<mutex> lk(m);
+				cond.wait(lk, [&] {return !data_queue.empty();});
+				fill data = move(data_queue.front());
+				data_queue.pop();
+				lk.unlock();
+				cout << data.qty_ << " filled @" << data.price_ << " with orderIds: "
+					<< data.buy_order_id_ << " and " << data.sell_order_id_ << endl;
+				if (data.sell_order_id_ < 9) {
 					break;
 				}
-				std::this_thread::sleep_for(milliseconds(1));
 			}
 		}
 
@@ -50,9 +81,13 @@ namespace hpx {
 			cout << "Best bid price: " << lq_bid->price << " bid size: " << lq_bid->buy_size << endl;
 			cout << "Best offer price: " << lq_offer->price << " offer size: " << lq_offer->sell_size << endl;
 		}
+		
 
 	private:
 		unique_ptr<level_btree> tree;
+		mutex m;
+		condition_variable cond;
+		queue<fill> data_queue;
 	};
 }
 
