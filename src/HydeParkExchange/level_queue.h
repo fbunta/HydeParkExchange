@@ -1,9 +1,9 @@
 #ifndef LEVEL_QUEUE_H
 #  define LEVEL_QUEUE_H
-#include <memory>
+#include "order.h";
+
 #include <mutex>
 #include <condition_variable>
-#include "order.h";
 #include <iostream>
 
 using std::unique_ptr;
@@ -20,7 +20,7 @@ namespace hpx {
     //template<typename T> // requires numeric type trait
     class level_queue {
     public:
-        level_queue(float price) : price(price) {}
+        level_queue(double price) : price(price) {}
 
         level_queue(level_queue const& other) : price(other.price) {
             if (other.left)
@@ -38,7 +38,7 @@ namespace hpx {
             return *this;
         }
 
-        float price;
+        double price;
         atomic<int> buy_size{0};
         atomic<int> sell_size{0};
         unique_ptr<level_queue> left;

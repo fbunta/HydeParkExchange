@@ -1,6 +1,8 @@
 #ifndef ORDER_H
 #	define ORDER_H
 #include "order_id_singleton.h"
+#include <condition_variable>
+
 using hpx::order_id_singleton;
 
 namespace hpx {
@@ -38,10 +40,10 @@ namespace hpx {
 		OrderSide side_;
 		OrderStatus status_;
 		int quantity_;
-		float price_;
+		double price_;
 		int order_id_;
 		TradingEntity trading_entity_;
-		order(OrderType type, OrderSide side, int qty, float price, TradingEntity te) {
+		order(OrderType type, OrderSide side, int qty, double price, TradingEntity te) {
 			type_ = type;
 			side_ = side;
 			status_ = OrderStatus::Inactive;
@@ -69,11 +71,11 @@ namespace hpx {
 	};
 
 	struct limit_order : public order {
-		limit_order(OrderSide side, int qty, float price, TradingEntity te) : order(OrderType::Limit, side, qty, price, te) {}
+		limit_order(OrderSide side, int qty, double price, TradingEntity te) : order(OrderType::Limit, side, qty, price, te) {}
 	};
 
 	struct ioc_order : public order {
-		ioc_order(OrderSide side, int qty, float price, TradingEntity te) : order(OrderType::IOC, side, qty, price, te) {}
+		ioc_order(OrderSide side, int qty, double price, TradingEntity te) : order(OrderType::IOC, side, qty, price, te) {}
 	};
 }
 #endif // !ORDER_H

@@ -6,12 +6,15 @@
 #include<tuple>
 #include<utility>
 #include <mutex>
+#include <optional>
+#include <cmath>
 
 using std::unique_ptr;
 using std::make_unique;
 using std::optional;
 using std::tuple;
 using std::lock_guard;
+using std::fabs;
 
 namespace hpx {
 
@@ -63,20 +66,22 @@ namespace hpx {
 			swap(root, other.root);
 		}
 
-		void insert(unique_ptr<order>& incoming_order) {
+		void insert(order& incoming_order) {
+			unique_ptr<order> ord = std::make_unique<order>(incoming_order);
 			if (root) {
-				insert(incoming_order, root);
+				insert(ord, root);
 			}
-			else {
-				root = make_unique<level_queue>(incoming_order->price_);
-				root->push(incoming_order);
+			else { // dont think we ever hit this
+				root = make_unique<level_queue>(ord->price_);
+				root->push(ord);
 			}
 		}
 		
-		void cancel(unique_ptr<order>& order_to_cancel) {
-			optional<level_queue*> level_q = search(order_to_cancel->price_, root.get());
+		void cancel(int order_id, double price) {
+			optional<level_queue*> level_q = search(price, root.get());
 			if (level_q) {
-				level_q.value()->pop(order_to_cancel->order_id_);
+				cout << "cancelled " << order_id << endl;
+				level_q.value()->pop(order_id);
 			}
 		}
 
@@ -95,15 +100,9 @@ namespace hpx {
 
 	private:
 		void insert(unique_ptr<order>& incoming_order, unique_ptr<level_queue>& leaf) {
-			if (incoming_order->price_ < leaf->price)
+			if (fabs(incoming_order->price_ - leaf->price) < 0.09)
 			{
-				if (leaf->left) {
-					insert(incoming_order, leaf->left);
-				}
-				else {
-					// outside price bounds
-					incoming_order->status_ = OrderStatus::Rejected;
-				}
+				leaf->push(incoming_order);
 			}
 			else if (incoming_order->price_ > leaf->price)
 			{
@@ -115,25 +114,27 @@ namespace hpx {
 					incoming_order->status_ = OrderStatus::Rejected;
 				}
 			}
-			else { // price == left.price_
-				leaf->push(incoming_order);
+			else { // price < left.price_
+				if (leaf->left) {
+					insert(incoming_order, leaf->left);
+				}
+				else {
+					// outside price bounds
+					incoming_order->status_ = OrderStatus::Rejected;
+				}
 			}
 		}
 
-		optional<level_queue*> search(float price, level_queue* const leaf) const {
-			if (leaf)
-			{
-				if (price == leaf->price) {
-					return leaf;
-				}
-				if (price < leaf->price) {
-					return search(price, leaf->left.get());
-				}
-				else {
-					return search(price, leaf->right.get());
-				}
+		optional<level_queue*> search(double price, level_queue* const leaf) const {
+			if (fabs(price - leaf->price) < 0.09) {
+				return std::make_optional<level_queue*>(leaf);
 			}
-			return {};
+			else if (price < leaf->price) {
+				return search(price, leaf->left.get());
+			}
+			else { // price > leaf->price
+				return search(price, leaf->right.get());
+			}
 		}
 
 		level_queue* const in_order(unique_ptr<level_queue>& leaf) {
@@ -173,7 +174,7 @@ namespace hpx {
 		}
 
 		// just used for initialization
-		void insert(float price, unique_ptr<level_queue>& leaf) {
+		void insert(double price, unique_ptr<level_queue>& leaf) {
 			if (price < leaf->price)
 			{
 				if (leaf->left) {

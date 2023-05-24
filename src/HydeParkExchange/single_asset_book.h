@@ -21,13 +21,16 @@ namespace hpx {
 			tree = make_unique<level_btree>();
 		}
 
-		// return a ref to that order, ownership still in the book
-		void insert(unique_ptr<order>& order) {
+		void insert(order order) {
 			tree->insert(order);
 		}
 
-		void cancel(unique_ptr<order>& order) {
-			tree->cancel(order);
+		//void insert(unique_ptr<order>&& order) {
+		//	tree->insert(move(order));
+		//}
+
+		void cancel(int order_id, double price) {
+			tree->cancel(order_id, price);
 		}
 
 		void find_fills() {
@@ -35,6 +38,7 @@ namespace hpx {
 				level_queue* best_bid_queue = tree->get_best_bid();
 				if (best_bid_queue) {
 					best_bid_queue->pop();
+					break;
 				}
 				std::this_thread::sleep_for(milliseconds(1));
 			}
