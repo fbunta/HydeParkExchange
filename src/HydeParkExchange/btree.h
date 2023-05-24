@@ -71,11 +71,16 @@ namespace hpx {
 			insert(move(ord), root);
 		}
 		
-		void cancel(int order_id, double price) {
+		void cancel(int order_id, double price, OrderSide side) {
 			optional<level_queue*> level_q = search(price, root.get());
 			if (level_q) {
+				if (side == OrderSide::Buy) {
+					level_q.value()->buy_pop(order_id);
+				}
+				else {
+					level_q.value()->sell_pop(order_id);
+				}
 				cout << "cancelled " << order_id << endl;
-				level_q.value()->pop(order_id);
 			}
 		}
 

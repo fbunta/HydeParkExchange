@@ -79,8 +79,8 @@ namespace hpx {
             return f;
         };
 
-        // TODO cancel for sell side
-        void pop(int order_id) { // for cancellations this pops from the middle of the queue 
+        // for cancellations this pops from the middle of the queue
+        void buy_pop(int order_id) {
             const lock_guard<mutex> lock(buy_mtx);
             if (buy_head == nullptr) {
                 throw std::invalid_argument("nothing to cancel");
@@ -104,6 +104,39 @@ namespace hpx {
                     }
                     item_to_check->value->status_ = OrderStatus::Cancelled;;
                     buy_size -= item_to_check->value->quantity_;
+                    return;
+                }
+                else {
+                    item_to_check = item_to_check->next;
+                }
+            }
+        };
+
+        // for cancellations this pops from the middle of the queue
+        void sell_pop(int order_id) {
+            const lock_guard<mutex> lock(sell_mtx);
+            if (sell_head == nullptr) {
+                throw std::invalid_argument("nothing to cancel");
+            }
+            shared_ptr<queue_item> item_to_check = sell_head;
+            while (item_to_check != nullptr)
+            {
+                if (item_to_check->value->order_id_ == order_id)
+                {
+                    if (sell_tail == item_to_check) {
+                        sell_tail = item_to_check->prev;
+                    }
+                    if (sell_head == item_to_check) {
+                        sell_head = item_to_check->next;
+                    }
+                    if (item_to_check->prev != nullptr) {
+                        item_to_check->prev->next = item_to_check->next;
+                    }
+                    if (item_to_check->next != nullptr) {
+                        item_to_check->next->prev = item_to_check->prev;
+                    }
+                    item_to_check->value->status_ = OrderStatus::Cancelled;;
+                    sell_size -= item_to_check->value->quantity_;
                     return;
                 }
                 else {
@@ -144,9 +177,9 @@ namespace hpx {
             }
         };
 
+        // the "next" item gets popped out right after a given item
+        // the "previous" item gets popped out right before a given item
         struct queue_item {
-            // the "next" item gets popped out right after a given item
-            // the "previous" item gets popped out right before a given item
             queue_item(unique_ptr<order> ord) : prev(nullptr), next(nullptr), value(std::move(ord)) {}
             shared_ptr<queue_item> prev; // if prev is nullptr then we assume this item is the head
             shared_ptr<queue_item> next; // if next is nullptr then we assume this is the tail

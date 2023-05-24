@@ -84,7 +84,7 @@ namespace hpx {
 		std::this_thread::sleep_for(milliseconds(30));
 		int order_id = place_limit_order(factory, OrderSide::Buy, 2, 12.1, TradingEntity::Belvedere);
 		std::this_thread::sleep_for(milliseconds(10));
-		q.cancel(order_id, 12.1);
+		q.cancel(order_id, 12.1, OrderSide::Buy);
 	}
 
 	void send_orders_2() {

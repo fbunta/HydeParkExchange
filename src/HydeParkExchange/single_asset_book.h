@@ -40,8 +40,8 @@ namespace hpx {
 			}
 		}
 
-		void cancel(int order_id, double price) {
-			tree->cancel(order_id, price);
+		void cancel(int order_id, double price, OrderSide side) {
+			tree->cancel(order_id, price, side);
 		}
 
 		void producer_fills() {

@@ -11,8 +11,8 @@ using namespace std;
 
 
 void trade(single_asset_book & exchange) {
-	//jthread e0(start_exchange_thread, ref(exchange));
-	//jthread e1(start_exchange_listener, ref(exchange));
+	jthread e0(start_exchange_thread, ref(exchange));
+	jthread e1(start_exchange_listener, ref(exchange));
 	jthread c1(consumer_all_orders, ref(exchange));
 
 	jthread t1(send_orders_1, ref(exchange));
