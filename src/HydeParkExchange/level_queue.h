@@ -4,7 +4,6 @@
 #include "fill.h"
 #include <mutex>
 #include <condition_variable>
-#include <iostream>
 #include <coroutine>
 
 using std::unique_ptr;
@@ -14,8 +13,7 @@ using std::make_unique;
 using std::mutex;
 using std::atomic;
 using std::lock_guard;
-using std::cout;
-using std::endl;
+using std::scoped_lock;
 
 namespace hpx {
     //template<typename T> // requires numeric type trait
@@ -45,9 +43,9 @@ namespace hpx {
         unique_ptr<level_queue> left;
         unique_ptr<level_queue> right;
         
-        unique_ptr<fill> pop() { // pops from the head of the queue
-            const lock_guard<mutex> lock_buy(buy_mtx);
-            const lock_guard<mutex> lock_sell(sell_mtx);
+        // pops from the head of the queue
+        unique_ptr<fill> pop() {
+            scoped_lock lock_both(buy_mtx, sell_mtx);
             if (buy_head == nullptr || sell_head == nullptr) {
                 return nullptr;
             }
@@ -58,7 +56,7 @@ namespace hpx {
             buy_size -= filled_qty;
             sell_size -= filled_qty;
 
-            if (buy_head->value->status_ == OrderStatus::FullFill) {
+            if (buy_head->value->status_ == order_status::FullFill) {
                 buy_head = buy_head->next; // set new head to old heads next
                 if (buy_head != nullptr) {
                     buy_head->prev = nullptr; // set new head prev to null so memory gets released
@@ -67,7 +65,7 @@ namespace hpx {
                     buy_tail = nullptr; // if we have no head then the tail needs to be cleaned up
                 }
             }
-            if (sell_head->value->status_ == OrderStatus::FullFill) {
+            if (sell_head->value->status_ == order_status::FullFill) {
                 sell_head = sell_head->next;
                 if (sell_head != nullptr) {
                     sell_head->prev = nullptr;
@@ -102,7 +100,7 @@ namespace hpx {
                     if (item_to_check->next != nullptr) {
                         item_to_check->next->prev = item_to_check->prev;
                     }
-                    item_to_check->value->status_ = OrderStatus::Cancelled;;
+                    item_to_check->value->status_ = order_status::Cancelled;;
                     buy_size -= item_to_check->value->quantity_;
                     return;
                 }
@@ -135,7 +133,7 @@ namespace hpx {
                     if (item_to_check->next != nullptr) {
                         item_to_check->next->prev = item_to_check->prev;
                     }
-                    item_to_check->value->status_ = OrderStatus::Cancelled;;
+                    item_to_check->value->status_ = order_status::Cancelled;;
                     sell_size -= item_to_check->value->quantity_;
                     return;
                 }
@@ -146,7 +144,7 @@ namespace hpx {
         };
 
         void push(unique_ptr<order> new_order) { // always push to the tail of the queue
-            if (new_order->side_ == OrderSide::Buy) {
+            if (new_order->side_ == order_side::Buy) {
                 const lock_guard<mutex> lock(buy_mtx);
                 shared_ptr<queue_item> new_item = make_shared<queue_item>(move(new_order));
 
@@ -159,7 +157,7 @@ namespace hpx {
                 }
                 buy_tail = new_item;
                 buy_size += new_item->value->quantity_;
-                new_item->value->status_ = OrderStatus::Active;
+                new_item->value->status_ = order_status::Active;
             }
             else {
                 const lock_guard<mutex> lock(sell_mtx);
@@ -173,7 +171,7 @@ namespace hpx {
                 }
                 sell_tail = new_item; // set this item as new tail
                 sell_size += new_item->value->quantity_;
-                new_item->value->status_ = OrderStatus::Active;
+                new_item->value->status_ = order_status::Active;
             }
         };
 

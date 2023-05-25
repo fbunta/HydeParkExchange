@@ -2,9 +2,9 @@
 #	define SINGLE_ASSET_BOOK_H
 #include "order.h"
 #include "btree.h"
-#include<memory>
-#include<iostream>
-#include<algorithm>
+#include <memory>
+#include <iostream>
+#include <algorithm>
 #include <queue>
 #include <mutex>
 #include <utility>
@@ -20,7 +20,6 @@ using std::unique_ptr;
 using std::make_unique;
 using hpx::level_btree;
 using hpx::order;
-using std::chrono::milliseconds;
 
 namespace hpx {
 	class single_asset_book {
@@ -31,17 +30,12 @@ namespace hpx {
 
 		void insert(order order) {
 			tree->insert(order);
-			if (order.side_ == OrderSide::Sell) {
-				cout << "placed order id: "<< order.order_id_ << " Sell " << order.quantity_ << "@" << order.price_ << endl;
-			}
-			else {
-				cout << "placed order id: " << order.order_id_ << " Buy " << order.quantity_ << "@" << order.price_ << endl;
-
-			}
+			cout << order << endl;
 		}
 
-		void cancel(int order_id, double price, OrderSide side) {
+		void cancel(int order_id, double price, order_side side) {
 			tree->cancel(order_id, price, side);
+			cout << "cancelled " << order_id << endl;
 		}
 
 		void producer_fills() {

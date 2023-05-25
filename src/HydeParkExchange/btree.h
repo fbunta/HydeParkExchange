@@ -71,16 +71,15 @@ namespace hpx {
 			insert(move(ord), root);
 		}
 		
-		void cancel(int order_id, double price, OrderSide side) {
+		void cancel(int order_id, double price, order_side side) {
 			optional<level_queue*> level_q = search(price, root.get());
 			if (level_q) {
-				if (side == OrderSide::Buy) {
+				if (side == order_side::Buy) {
 					level_q.value()->buy_pop(order_id);
 				}
 				else {
 					level_q.value()->sell_pop(order_id);
 				}
-				cout << "cancelled " << order_id << endl;
 			}
 		}
 
@@ -110,7 +109,7 @@ namespace hpx {
 				}
 				else {
 					// outside price bounds
-					incoming_order->status_ = OrderStatus::Rejected;
+					incoming_order->status_ = order_status::Rejected;
 				}
 			}
 			else { // price < left.price_
@@ -119,7 +118,7 @@ namespace hpx {
 				}
 				else {
 					// outside price bounds
-					incoming_order->status_ = OrderStatus::Rejected;
+					incoming_order->status_ = order_status::Rejected;
 				}
 			}
 		}
