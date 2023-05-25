@@ -1,10 +1,14 @@
 #ifndef ORDER_H
 #	define ORDER_H
+
+#define FMT_HEADER_ONLY
+
 #include "order_id_singleton.h"
 #include <condition_variable>
 #include <ostream>
-#include <format>
+#include "fmt/format.h"
 #include <string>
+
 
 using fmt::format;
 using std::string;
