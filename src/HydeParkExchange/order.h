@@ -3,10 +3,11 @@
 #include "order_id_singleton.h"
 #include <condition_variable>
 #include <ostream>
-#include <format>
+#include "fmt/format.h"
 #include <string>
+#include <variant>
 
-using std::format;
+using fmt::format;
 using std::string;
 using std::ostream;
 using hpx::order_id_singleton;
@@ -45,17 +46,28 @@ namespace hpx {
 		}
 	};
 
-	enum class order_side {
-		Buy,
-		Sell
-	};
+	
+	struct Buy {};
+	struct Sell {};
+	using order_side = std::variant<Buy, Sell>;
 
-	string side_to_string(order_side side)
+	Buy b;
+	Sell s;
+	std::variant<Buy, Sell> buy_order_side = b;
+	std::variant<Buy, Sell> sell_order_side = s;
+
+	// visitor variant pattern
+	string side_to_string(const order_side& os)
 	{
-		switch (side) {
-		case(order_side::Buy): return "buy";
-		case(order_side::Sell): return "sell";
-		}
+		return std::visit([](const auto& s) {
+			using T = std::decay_t<decltype(s)>;
+			if constexpr(std::is_same_v<T,Buy>){
+				return "buy";
+			}
+			else if constexpr(std::is_same_v<T, Sell>){
+				return "sell";
+			}
+		}, os);
 	};
 
 	enum class order_status {

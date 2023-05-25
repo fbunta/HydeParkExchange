@@ -33,8 +33,9 @@ void test_stream() {
 		limit_order,
 		ioc_order>;
 	unique_ptr<order_factory> factory(make_unique<concrete_order_factory>());
-	unique_ptr<order> order_1(factory->create<limit_order>(order_side::Buy, 4, 12.0, trading_entity::Belvedere));
-	unique_ptr<order> order_2(factory->create<limit_order>(order_side::Buy, 4, 12.0, trading_entity::Wolverine));
+
+	unique_ptr<order> order_1(factory->create<limit_order>(buy_order_side, 4, 12.0, trading_entity::Belvedere));
+	unique_ptr<order> order_2(factory->create<limit_order>(sell_order_side, 4, 12.0, trading_entity::Wolverine));
 
 	//order* o = order_1.get();
 	entity_stream myout(std::cout, trading_entity::Belvedere);

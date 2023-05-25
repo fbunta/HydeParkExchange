@@ -1,6 +1,6 @@
 #ifndef LEVEL_QUEUE_H
 #  define LEVEL_QUEUE_H
-#include "order.h";
+#include "order.h"
 #include "fill.h"
 #include <mutex>
 #include <condition_variable>
@@ -144,7 +144,7 @@ namespace hpx {
         };
 
         void push(unique_ptr<order> new_order) { // always push to the tail of the queue
-            if (new_order->side_ == order_side::Buy) {
+            if ( side_to_string(new_order->side_) == "buy") {
                 const lock_guard<mutex> lock(buy_mtx);
                 shared_ptr<queue_item> new_item = make_shared<queue_item>(move(new_order));
 

@@ -55,7 +55,7 @@ namespace hpx {
 					root = make_unique<level_queue>(*other.root);
 				}
 				else {
-					root.reset();
+					root.reset() ;
 				}
 			return *this;
 		}
@@ -74,7 +74,7 @@ namespace hpx {
 		void cancel(int order_id, double price, order_side side) {
 			optional<level_queue*> level_q = search(price, root.get());
 			if (level_q) {
-				if (side == order_side::Buy) {
+				if (side_to_string(side) == "buy") {
 					level_q.value()->buy_pop(order_id);
 				}
 				else {
