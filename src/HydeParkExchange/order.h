@@ -6,7 +6,7 @@
 #include <format>
 #include <string>
 
-using std::format;
+using fmt::format;
 using std::string;
 using std::ostream;
 using hpx::order_id_singleton;
