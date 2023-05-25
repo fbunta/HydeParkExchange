@@ -18,6 +18,9 @@ void trade(single_asset_book & exchange) {
 	jthread t1(send_orders_1, ref(exchange));
 	jthread t2(send_orders_2);
 	jthread t3(send_orders_3);
+
+	// Fix Parsing
+	jthread t4(send_orders_4);
 }
 
 int main()

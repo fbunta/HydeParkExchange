@@ -2,6 +2,7 @@
 #  define TRADERS_H
 #include "abstract_order_factory.h"
 #include "btree.h"
+#include "fix_parser.hpp"
 #include "order.h"
 #include <iostream>
 #include <chrono>
@@ -103,5 +104,32 @@ namespace hpx {
 		place_limit_order(factory, OrderSide::Sell, 15, 12.3, TradingEntity::Citadel);
 		place_limit_order(factory, OrderSide::Sell, 20, 12.4, TradingEntity::Citadel);
 	}
+
+	void send_orders_4() {
+		unique_ptr<order_factory> factory(make_unique<concrete_order_factory>());
+		std::this_thread::sleep_for(milliseconds(60));
+		// Simulate orders from an input stream in real-world formatting
+
+		std::string_view fix_1 = "8=FIX.4.29=035=D49=83019956=AZKJ34=057=362052=20150406-12:17:2711=0c968e69-c3ff-4f9f-bc66-9e5ebccd980741=e0568b5c-8bb1-41f0-97bf-5eed32828c241=90964630055=SJM48=46428843022=154=138=7570040=115=USD59=060=20150406-12:17:278201=1207=P10=0";
+		//std::string_view fix_2 = "8=FIX.4.29=035=D49=AZKJ56=JGEB34=150=362057=946152=20150406-12:17:2711=3a074d1d-fb06-4eb0-b2f8-0912c5735f65109=8301991=90964630055=SJM48=46428843022=154=138=7570040=115=USD59=08011=0c968e69-c3ff-4f9f-bc66-9e5ebccd980760=20150406-12:17:278201=3207=P10=0";
+		//std::string_view fix_3 = "8=FIX.4.29=035=D49=AZKJ56=JGEB34=250=362057=946152=20150406-12:17:2711=3a074d1d-fb06-4eb0-b2f8-0912c5735f6541=335844d8-fc05-41d9-825b-6f3a5059a29b109=8301991=AZKJ90964630055=SJM48=46428843022=154=138=7570040=115=USD59=060=20150406-12:17:278201=1207=P10=0";
+		
+		std::optional<std::tuple<double, double, bool, std::string>> result = parseFixMessage(fix_1);
+		if (result) {
+			auto [price, quantity, is_buy, symbol] = result.value();
+			if(is_buy){
+				place_limit_order(factory, OrderSide::Buy, quantity, price, TradingEntity::IMC);
+			}
+			else{
+				place_limit_order(factory, OrderSide::Sell, quantity, price, TradingEntity::IMC);
+			}
+		
+		}
+		
+		//place_limit_order(factory, OrderSide::Sell, 10, 12.2, TradingEntity::Citadel);
+		//place_limit_order(factory, OrderSide::Sell, 15, 12.3, TradingEntity::Citadel);
+		//place_limit_order(factory, OrderSide::Sell, 20, 12.4, TradingEntity::Citadel);
+	}
+	
 }
 #endif
