@@ -1,6 +1,6 @@
 #ifndef LEVEL_QUEUE_H
 #  define LEVEL_QUEUE_H
-#include "order.h";
+#include "order.h"
 #include "fill.h"
 #include <mutex>
 #include <condition_variable>
