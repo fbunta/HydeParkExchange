@@ -4,6 +4,7 @@
 #include "btree.h"
 #include "fix_parser.hpp"
 #include "order.h"
+#include "single_asset_book.h"
 #include <iostream>
 #include <chrono>
 #include <utility>
@@ -23,6 +24,7 @@ using std::make_unique;
 using std::mutex;
 using std::unique_lock;
 using hpx::order;
+using hpx::single_asset_book;
 using hpx::ioc_order;
 using hpx::market_order;
 using hpx::limit_order;

@@ -4,9 +4,9 @@
 #define FMT_HEADER_ONLY
 
 #include "order_id_singleton.h"
+#include "fmt/format.h"
 #include <condition_variable>
 #include <ostream>
-#include "fmt/format.h"
 #include <string>
 
 
