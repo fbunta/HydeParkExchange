@@ -67,7 +67,7 @@ std::optional<std::tuple<double, double, bool, std::string>> parseFixMessage(con
         //          << " : " << match.get<2>().to_view() << "\n";
         if(fieldNum == 44){
             std::string px_string = std::string(match.get<2>().to_view());
-            px = std::stoi(px_string);
+            px = std::stod(px_string);
             px_flag = true;
         }
         if(fieldNum == 38){

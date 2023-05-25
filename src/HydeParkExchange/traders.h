@@ -86,53 +86,86 @@ namespace hpx {
 		q.consumer_fills(entity);
 	}
 
-	void send_orders_1(single_asset_book& q) {
+	int send_fix_order(std::string_view fix, trading_entity t){
 		unique_ptr<order_factory> factory(make_unique<concrete_order_factory>());
-		place_limit_order(factory, buy_order_side, 4, 12.0, trading_entity::Belvedere);
-		place_limit_order(factory, sell_order_side, 4, 12.3, trading_entity::Belvedere);
+		std::optional<std::tuple<double, double, bool, std::string>> result = parseFixMessage(fix);
+		if (result) {
+			//auto [price, quantity, is_buy, symbol] = result.value();
+			std::tuple<double, int, bool, std::string> res = result.value();
+
+			// Specifying return values using structured bindings
+			double price;
+			double quantity;
+			bool is_buy;
+			std::string symbol;
+			std::tie(price, quantity, is_buy, symbol) = res;
+
+			if(is_buy){
+				int order_id = place_limit_order(factory, buy_order_side, quantity, price, trading_entity::IMC);
+				return order_id;
+			}
+			else{
+				int order_id = place_limit_order(factory, sell_order_side, quantity, price, trading_entity::IMC);
+				return order_id;
+			}
+			
+		}
+		return -1;
+	}
+
+	void send_orders_1(single_asset_book& q) {
+
+		//Belvedere's Trading
+		
+		trading_entity Belv = trading_entity::Belvedere;
+
+		std::string_view belv_trade_1 ="8=FIX.4.29=035=D49=83019956=AZKJ34=057=362052=20150406-12:17:2711=0c968e69-c3ff-4f9f-bc66-9e5ebccd980741=e0568b5c-8bb1-41f0-97bf-5eed32828c241=90964630055=SPX44=12.022=154=238=440=115=USD59=060=20150406-12:17:278201=1207=P10=0";
+		std::string_view belv_trade_2 ="8=FIX.4.29=035=D49=83019956=AZKJ34=057=362052=20150406-12:17:2711=0c968e69-c3ff-4f9f-bc66-9e5ebccd980741=e0568b5c-8bb1-41f0-97bf-5eed32828c241=90964630055=SPX44=12.322=154=138=440=115=USD59=060=20150406-12:17:278201=1207=P10=0";
+		std::string_view belv_trade_3 ="8=FIX.4.29=035=D49=83019956=AZKJ34=057=362052=20150406-12:17:2711=0c968e69-c3ff-4f9f-bc66-9e5ebccd980741=e0568b5c-8bb1-41f0-97bf-5eed32828c241=90964630055=SPX44=12.122=154=238=240=115=USD59=060=20150406-12:17:278201=1207=P10=0";
+		
+		send_fix_order(belv_trade_1, Belv);
+		send_fix_order(belv_trade_2, Belv);
+
 		std::this_thread::sleep_for(30ms);
-		int order_id = place_limit_order(factory, buy_order_side, 2, 12.1, trading_entity::Belvedere);
+
+		int order_id = send_fix_order(belv_trade_3, Belv);
+
 		std::this_thread::sleep_for(10ms);
 		q.cancel(order_id, 12.1, buy_order_side);
 	}
 
 	void send_orders_2() {
-		unique_ptr<order_factory> factory(make_unique<concrete_order_factory>());
-		place_limit_order(factory, buy_order_side, 5, 12.0, trading_entity::Wolverine);
-		place_limit_order(factory, sell_order_side, 7, 12.3, trading_entity::Wolverine);
+		//Wolverine's Trading 
+
+		trading_entity Wolv = trading_entity::Wolverine;
+
+		std::string_view wolv_trade_1 ="8=FIX.4.29=035=D49=83019956=AZKJ34=057=362052=20150406-12:17:2711=0c968e69-c3ff-4f9f-bc66-9e5ebccd980741=e0568b5c-8bb1-41f0-97bf-5eed32828c241=90964630055=SPX44=12.022=154=238=540=115=USD59=060=20150406-12:17:278201=1207=P10=0";
+		std::string_view wolv_trade_2 ="8=FIX.4.29=035=D49=83019956=AZKJ34=057=362052=20150406-12:17:2711=0c968e69-c3ff-4f9f-bc66-9e5ebccd980741=e0568b5c-8bb1-41f0-97bf-5eed32828c241=90964630055=SPX44=12.322=154=138=740=115=USD59=060=20150406-12:17:278201=1207=P10=0";
+		std::string_view wolv_trade_3 ="8=FIX.4.29=035=D49=83019956=AZKJ34=057=362052=20150406-12:17:2711=0c968e69-c3ff-4f9f-bc66-9e5ebccd980741=e0568b5c-8bb1-41f0-97bf-5eed32828c241=90964630055=SPX44=12.122=154=238=340=115=USD59=060=20150406-12:17:278201=1207=P10=0";
+	
+
+		send_fix_order(wolv_trade_1, Wolv);
+		send_fix_order(wolv_trade_2, Wolv);
+
 		std::this_thread::sleep_for(20ms);
-		place_limit_order(factory, buy_order_side, 3, 12.1, trading_entity::Wolverine);
+
+		send_fix_order(wolv_trade_3, Wolv);
 	}
 
 	void send_orders_3() {
-		unique_ptr<order_factory> factory(make_unique<concrete_order_factory>());
+		//Citadel's trading
+		trading_entity CitSec = trading_entity::Citadel;
 		std::this_thread::sleep_for(40ms);
-		place_limit_order(factory, sell_order_side, 1, 12.1, trading_entity::Citadel);
-		place_limit_order(factory, sell_order_side, 10, 12.2, trading_entity::Citadel);
-		place_limit_order(factory, sell_order_side, 15, 12.3, trading_entity::Citadel);
-		place_limit_order(factory, sell_order_side, 20, 12.4, trading_entity::Citadel);
-	}
 
-	void send_orders_4() {
-		unique_ptr<order_factory> factory(make_unique<concrete_order_factory>());
-		std::this_thread::sleep_for(60ms);
-		// Simulate orders from an input stream in real-world formatting
+		std::string_view citadel_trade_2 = "8=FIX.4.29=035=D49=83019956=AZKJ34=057=362052=20150406-12:17:2711=0c968e69-c3ff-4f9f-bc66-9e5ebccd980741=e0568b5c-8bb1-41f0-97bf-5eed32828c241=90964630055=SPX44=12.222=154=138=1040=115=USD59=060=20150406-12:17:278201=1207=P10=0";
+		std::string_view citadel_trade_1 = "8=FIX.4.29=035=D49=83019956=AZKJ34=057=362052=20150406-12:17:2711=0c968e69-c3ff-4f9f-bc66-9e5ebccd980741=e0568b5c-8bb1-41f0-97bf-5eed32828c241=90964630055=SPX44=12.122=154=138=140=115=USD59=060=20150406-12:17:278201=1207=P10=0";
+		std::string_view citadel_trade_3 = "8=FIX.4.29=035=D49=83019956=AZKJ34=057=362052=20150406-12:17:2711=0c968e69-c3ff-4f9f-bc66-9e5ebccd980741=e0568b5c-8bb1-41f0-97bf-5eed32828c241=90964630055=SPX44=12.322=154=138=1540=115=USD59=060=20150406-12:17:278201=1207=P10=0";
+		std::string_view citadel_trade_4 = "8=FIX.4.29=035=D49=83019956=AZKJ34=057=362052=20150406-12:17:2711=0c968e69-c3ff-4f9f-bc66-9e5ebccd980741=e0568b5c-8bb1-41f0-97bf-5eed32828c241=90964630055=SPX44=12.422=154=138=2040=115=USD59=060=20150406-12:17:278201=1207=P10=0";
 
-		std::string_view fix_1 = "8=FIX.4.29=035=D49=83019956=AZKJ34=057=362052=20150406-12:17:2711=0c968e69-c3ff-4f9f-bc66-9e5ebccd980741=e0568b5c-8bb1-41f0-97bf-5eed32828c241=90964630055=SJM48=46428843022=154=138=7570040=115=USD59=060=20150406-12:17:278201=1207=P10=0";
-		//std::string_view fix_2 = "8=FIX.4.29=035=D49=AZKJ56=JGEB34=150=362057=946152=20150406-12:17:2711=3a074d1d-fb06-4eb0-b2f8-0912c5735f65109=8301991=90964630055=SJM48=46428843022=154=138=7570040=115=USD59=08011=0c968e69-c3ff-4f9f-bc66-9e5ebccd980760=20150406-12:17:278201=3207=P10=0";
-		//std::string_view fix_3 = "8=FIX.4.29=035=D49=AZKJ56=JGEB34=250=362057=946152=20150406-12:17:2711=3a074d1d-fb06-4eb0-b2f8-0912c5735f6541=335844d8-fc05-41d9-825b-6f3a5059a29b109=8301991=AZKJ90964630055=SJM48=46428843022=154=138=7570040=115=USD59=060=20150406-12:17:278201=1207=P10=0";
-		
-		std::optional<std::tuple<double, double, bool, std::string>> result = parseFixMessage(fix_1);
-		if (result) {
-			auto [price, quantity, is_buy, symbol] = result.value();
-			if(is_buy){
-				place_limit_order(factory, buy_order_side, quantity, price, trading_entity::IMC);
-			}
-			else{
-				place_limit_order(factory, sell_order_side, quantity, price, trading_entity::IMC);
-			}
-		
-		}
+		send_fix_order(citadel_trade_1, CitSec);
+		send_fix_order(citadel_trade_2, CitSec);
+		send_fix_order(citadel_trade_3, CitSec);
+		send_fix_order(citadel_trade_4, CitSec);
 
 	}
 	
