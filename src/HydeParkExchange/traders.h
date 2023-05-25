@@ -39,6 +39,8 @@ using concrete_order_factory = concrete_factory<order_factory,
 	limit_order,
 	ioc_order>;
 
+using namespace std::chrono_literals;
+
 namespace hpx {
 
 	mutex m;
@@ -82,9 +84,9 @@ namespace hpx {
 		unique_ptr<order_factory> factory(make_unique<concrete_order_factory>());
 		place_limit_order(factory, order_side::Buy, 4, 12.0, trading_entity::Belvedere);
 		place_limit_order(factory, order_side::Sell, 4, 12.3, trading_entity::Belvedere);
-		std::this_thread::sleep_for(milliseconds(30));
+		std::this_thread::sleep_for(30ms);
 		int order_id = place_limit_order(factory, order_side::Buy, 2, 12.1, trading_entity::Belvedere);
-		std::this_thread::sleep_for(milliseconds(10));
+		std::this_thread::sleep_for(10ms);
 		q.cancel(order_id, 12.1, order_side::Buy);
 	}
 
@@ -92,13 +94,13 @@ namespace hpx {
 		unique_ptr<order_factory> factory(make_unique<concrete_order_factory>());
 		place_limit_order(factory, order_side::Buy, 5, 12.0, trading_entity::Wolverine);
 		place_limit_order(factory, order_side::Sell, 7, 12.3, trading_entity::Wolverine);
-		std::this_thread::sleep_for(milliseconds(20));
+		std::this_thread::sleep_for(20ms);
 		place_limit_order(factory, order_side::Buy, 3, 12.1, trading_entity::Wolverine);
 	}
 
 	void send_orders_3() {
 		unique_ptr<order_factory> factory(make_unique<concrete_order_factory>());
-		std::this_thread::sleep_for(milliseconds(40));
+		std::this_thread::sleep_for(40ms);
 		place_limit_order(factory, order_side::Sell, 1, 12.1, trading_entity::Citadel);
 		place_limit_order(factory, order_side::Sell, 10, 12.2, trading_entity::Citadel);
 		place_limit_order(factory, order_side::Sell, 15, 12.3, trading_entity::Citadel);
@@ -107,7 +109,7 @@ namespace hpx {
 
 	void send_orders_4() {
 		unique_ptr<order_factory> factory(make_unique<concrete_order_factory>());
-		std::this_thread::sleep_for(milliseconds(60));
+		std::this_thread::sleep_for(60ms);
 		// Simulate orders from an input stream in real-world formatting
 
 		std::string_view fix_1 = "8=FIX.4.29=035=D49=83019956=AZKJ34=057=362052=20150406-12:17:2711=0c968e69-c3ff-4f9f-bc66-9e5ebccd980741=e0568b5c-8bb1-41f0-97bf-5eed32828c241=90964630055=SJM48=46428843022=154=138=7570040=115=USD59=060=20150406-12:17:278201=1207=P10=0";
