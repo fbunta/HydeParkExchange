@@ -101,11 +101,11 @@ namespace hpx {
 			std::tie(price, quantity, is_buy, symbol) = res;
 
 			if(is_buy){
-				int order_id = place_limit_order(factory, buy_order_side, quantity, price, trading_entity::IMC);
+				int order_id = place_limit_order(factory, buy_order_side, quantity, price, t);
 				return order_id;
 			}
 			else{
-				int order_id = place_limit_order(factory, sell_order_side, quantity, price, trading_entity::IMC);
+				int order_id = place_limit_order(factory, sell_order_side, quantity, price, t);
 				return order_id;
 			}
 			
