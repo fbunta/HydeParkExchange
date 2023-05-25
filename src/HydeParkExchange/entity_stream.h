@@ -1,15 +1,11 @@
+#ifndef ENTITY_STREAM_H
+#   define ENTITY_STREAM_H
 #include <iostream>
 #include "order.h"
-#include "abstract_order_factory.h"
+#include "fill.h"
 
 using hpx::order;
-using hpx::ioc_order;
-using hpx::market_order;
-using hpx::limit_order;
-using hpx::abstract_factory;
-using hpx::concrete_factory;
-using hpx::order_side;
-using hpx::trading_entity;
+using hpx::fill;
 
 namespace hpx {
     template<class CharT, class Traits = std::char_traits<CharT> >
@@ -32,19 +28,38 @@ namespace hpx {
                 *this << *o;
             }
         }
+
+        void myfn(fill* f)
+        {
+            trading_entity a = *static_cast<trading_entity*>(this->pword(entity_index));
+            if (a == f->buy.entity_) {
+                *this << f->buy;
+            }
+            else if (a == f->sell.entity_) {
+                *this << f->sell;
+            }
+        }
     };
 
     // each specialization of mystream obtains a unique index from xalloc()
     template<class CharT, class Traits>
     const int entity_stream<CharT, Traits>::entity_index = std::ios_base::xalloc();
 
-    // This I/O manipulator will be able to recognize ostreams that are entity_streams
-    // by looking up the pointer stored in pword
+
     template<class CharT, class Traits>
     std::basic_ostream<CharT, Traits>&
-    mymanip(std::basic_ostream<CharT, Traits>& os, order* order_)
+    entity_filtered_manip(std::basic_ostream<CharT, Traits>& os, order* order_)
     {
         static_cast<entity_stream<CharT, Traits>&>(os).myfn(order_);
         return os;
     }
+
+    template<class CharT, class Traits>
+    std::basic_ostream<CharT, Traits>&
+        entity_filtered_manip(std::basic_ostream<CharT, Traits>& os, fill* fill_)
+    {
+        static_cast<entity_stream<CharT, Traits>&>(os).myfn(fill_);
+        return os;
+    }
 }
+#endif // !ENTITY_STREAM_H

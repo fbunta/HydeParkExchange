@@ -50,7 +50,8 @@ namespace hpx {
                 return nullptr;
             }
             int filled_qty = std::min(buy_head->value->quantity_, sell_head->value->quantity_);
-            unique_ptr<fill> f = make_unique<fill>(buy_head->value->order_id_, sell_head->value->order_id_, this->price, filled_qty);
+            unique_ptr<fill> f = make_unique<fill>(buy_head->value->order_id_, buy_head->value->trading_entity_,
+                sell_head->value->order_id_, sell_head->value->trading_entity_, this->price, filled_qty);
             buy_head->value->fill_order(filled_qty);
             sell_head->value->fill_order(filled_qty);
             buy_size -= filled_qty;

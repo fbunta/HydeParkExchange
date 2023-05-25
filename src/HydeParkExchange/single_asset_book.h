@@ -2,6 +2,7 @@
 #	define SINGLE_ASSET_BOOK_H
 #include "order.h"
 #include "btree.h"
+#include "entity_stream.h"
 #include <memory>
 #include <iostream>
 #include <algorithm>
@@ -20,6 +21,7 @@ using std::unique_ptr;
 using std::make_unique;
 using hpx::level_btree;
 using hpx::order;
+using hpx::entity_stream;
 
 namespace hpx {
 	class single_asset_book {
@@ -45,7 +47,7 @@ namespace hpx {
 					unique_ptr<fill> f = best_bid_queue->pop();
 					if (f != nullptr) {
 						lock_guard lk(m);
-						data_queue.push(*f);
+						data_queue.push(move(f));
 						cond.notify_one();
 						break;
 					}
@@ -53,17 +55,17 @@ namespace hpx {
 			}
 		}
 
-		void consumer_fills()
+		void consumer_fills(trading_entity entity)
 		{
+			entity_stream myout(std::cout, entity);
 			while (true) {
 				unique_lock<mutex> lk(m);
 				cond.wait(lk, [&] {return !data_queue.empty();});
-				fill data = move(data_queue.front());
+				unique_ptr<fill> data = move(data_queue.front());
 				data_queue.pop();
 				lk.unlock();
-				cout << data.qty_ << " filled @" << data.price_ << " with orderIds: "
-					<< data.buy_order_id_ << " and " << data.sell_order_id_ << endl;
-				if (data.sell_order_id_ < 9) {
+				entity_filtered_manip(myout, data.get());
+				if (data->sell.id_ < 9) {
 					break;
 				}
 			}
@@ -81,7 +83,7 @@ namespace hpx {
 		unique_ptr<level_btree> tree;
 		mutex m;
 		condition_variable cond;
-		queue<fill> data_queue;
+		queue<unique_ptr<fill>> data_queue;
 	};
 }
 

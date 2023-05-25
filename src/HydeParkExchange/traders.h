@@ -76,8 +76,8 @@ namespace hpx {
 		q.producer_fills();
 	}
 
-	void start_exchange_listener(single_asset_book& q) {
-		q.consumer_fills();
+	void start_fill_listener(single_asset_book& q, trading_entity entity) {
+		q.consumer_fills(entity);
 	}
 
 	void send_orders_1(single_asset_book& q) {

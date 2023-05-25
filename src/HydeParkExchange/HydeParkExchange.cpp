@@ -13,7 +13,7 @@ using namespace std;
 
 void trade(single_asset_book & exchange) {
 	jthread e0(start_exchange_thread, ref(exchange));
-	jthread e1(start_exchange_listener, ref(exchange));
+	jthread e1(start_fill_listener, ref(exchange), trading_entity::Wolverine);
 	jthread c1(consumer_all_orders, ref(exchange));
 
 	jthread t1(send_orders_1, ref(exchange));
@@ -21,7 +21,7 @@ void trade(single_asset_book & exchange) {
 	jthread t3(send_orders_3);
 
 	// Fix Parsing
-	jthread t4(send_orders_4);
+	//jthread t4(send_orders_4);
 }
 
 void test_stream() {
@@ -38,8 +38,8 @@ void test_stream() {
 
 	//order* o = order_1.get();
 	entity_stream myout(std::cout, trading_entity::Belvedere);
-	mymanip(myout, order_1.get());
-	mymanip(myout, order_2.get());
+	entity_filtered_manip(myout, order_1.get());
+	entity_filtered_manip(myout, order_2.get());
 }
 
 int main()
