@@ -11,6 +11,23 @@ We support two ways of building and running the project.
 1. Visual Studio
 2. CMake
 
+## Functionality Delivered
+
+When this project is compiled and run out of the box this is an example of what the console output could be.
+
+![Console Output](./HPX.jpg)
+
+Note it could be different because of some variance in threads processing timing but this is roughly what it should look like.
+
+First Wolverine and Belvedere place a series of orders with IDs in this of 0-5, which make the market $12.1 bid $12.3 offer which means that the market shows the highest price someone is willing to buy is $12.1 and the lowest price someone is willing to sell is $12.3. The bid size is 5 and the offer size is 11.
+
+Now imagine some news comes out or another asset correlated to this one dips. Belvedere Trading realizes this and no longer wants to buy for as high as $12.1 so cancels order id 4 which probably was ahead of Wolverine's order 5. Now Citadel comes in with a sell order of $12.1 for a 1-lot which will instantly cross with order 5. We have evidence that the cancel functionality worked as expected because the file Wolverine.out displays the fill:
+
+`Wolverine Fill 5 BUY 1 @ 12.1`
+
+At the very end of the run after we tear down all the threads we print the market prices that we as an exchange want to be public information. We can see that the best bid price is still $12.1 but the size is only 2. That is because order 5 was partially filled and the remaining quantity is still sitting there at the head of the queue.
+
+
 ## Advanced C++ Techniques Used
 
 1. Abstract factory
@@ -41,3 +58,4 @@ We support two ways of building and running the project.
 * We planned to get functionality of market and immediate-or-cancel order types but it was such a big lift getting limit orders to work that we ran out of time.
 * As a potential expansion, we could integrate multiple assets (E.g. the entire SPX option chain of 200+ securities) and incorporated the Bloom Filter code for fast lookup. 
 * A velocity control for the exchange, so that some company can’t just flood the orderbook with their orders and prevent others from trading (e.g. a restriction of 10 orders per millisecond)
+* A realtime stream of best bid and offer with sizes that everyone can see.

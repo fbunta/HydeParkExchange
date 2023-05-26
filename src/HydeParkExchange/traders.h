@@ -123,7 +123,7 @@ namespace hpx {
 		send_fix_order(belv_trade_1, Belv);
 		send_fix_order(belv_trade_2, Belv);
 
-		std::this_thread::sleep_for(30ms);
+		std::this_thread::sleep_for(20ms);
 
 		int order_id = send_fix_order(belv_trade_3, Belv);
 
@@ -143,7 +143,7 @@ namespace hpx {
 		send_fix_order(wolv_trade_1, Wolv);
 		send_fix_order(wolv_trade_2, Wolv);
 
-		std::this_thread::sleep_for(20ms);
+		std::this_thread::sleep_for(25ms);
 
 		send_fix_order(wolv_trade_3, Wolv);
 	}
