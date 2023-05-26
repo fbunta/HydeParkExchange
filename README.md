@@ -15,7 +15,7 @@ We support two ways of building and running the project.
 
 When this project is compiled and run out of the box this is an example of what the console output could be.
 
-![Console Output](./HPX.jpg)
+<img src="HPX.jpg"/>
 
 Note it could be different because of some variance in threads processing timing but this is roughly what it should look like.
 
