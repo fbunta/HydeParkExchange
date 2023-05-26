@@ -8,7 +8,13 @@ In this project, Om and Finn wrote the beginnings of the key framework for a new
 ## Build/Configuration Instructions
 
 We support two ways of building and running the project.
-1. Visual Studio
+1. Visual Studio 22 (Finn)
+    * After cloning this repo please create a visual studio project by opening the visual studio client and selecting File -> New -> Project from Existing Code
+    * This takes you to a wizard where you should select Visual C++
+    * Then choose as the project directory <path-to-your-git>/src/HydeParkExchange and name this project HydeParkExchange
+    * Continue through the rest of the wizard hitting next
+    * Now that we created the project, configure it to use microsofts c++ 20 compiler in project properties
+    * Lastly you will need to comment out line 5 in order.h (this line is needed for cmake)
 2. CMake
 
 ## Functionality Delivered
