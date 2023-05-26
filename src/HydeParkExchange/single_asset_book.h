@@ -3,13 +3,18 @@
 #include "order.h"
 #include "btree.h"
 #include "entity_stream.h"
+#include "fmt/format.h"
 #include <memory>
+#include <string>
 #include <iostream>
+#include <fstream>
 #include <algorithm>
 #include <queue>
 #include <mutex>
 #include <utility>
 
+using fmt::format;
+using std::ofstream;
 using std::move;
 using std::queue;
 using std::condition_variable;
@@ -37,7 +42,7 @@ namespace hpx {
 
 		void cancel(int order_id, double price, order_side side) {
 			tree->cancel(order_id, price, side);
-			cout << "cancelled " << order_id << endl;
+			cout << "cancelled order ID " << order_id << endl;
 		}
 
 		void producer_fills() {
@@ -55,9 +60,12 @@ namespace hpx {
 			}
 		}
 
+		// this consumer streams only the fills of the given trading entity to a file
 		void consumer_fills(trading_entity entity)
 		{
-			entity_stream myout(std::cout, entity);
+			std::string filename = format("{}.out", entity_to_string(entity));
+			ofstream fill_file(filename, std::ios::out);
+			entity_stream myout(fill_file, entity);
 			while (true) {
 				unique_lock<mutex> lk(m);
 				cond.wait(lk, [&] {return !data_queue.empty();});

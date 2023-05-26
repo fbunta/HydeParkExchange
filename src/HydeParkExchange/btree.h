@@ -93,9 +93,6 @@ namespace hpx {
 			return reverse_in_order(root);
 		}
 
-		//TODO WRITE A FUNCTION THAT FINDS BEST BID AND OFFER QUEUES WITH SIZE
-
-
 	private:
 		void insert(unique_ptr<order> incoming_order, unique_ptr<level_queue>& leaf) {
 			if (fabs(incoming_order->price_ - leaf->price) < 0.09)

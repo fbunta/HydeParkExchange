@@ -72,6 +72,7 @@ namespace hpx {
 			data_queue.pop();
 			lk.unlock();
 			q.insert(data);
+			// this teardown could be improved
 			if (data.order_id_==9) {
 				break;
 			}
@@ -90,9 +91,7 @@ namespace hpx {
 		unique_ptr<order_factory> factory(make_unique<concrete_order_factory>());
 		std::optional<std::tuple<double, double, bool, std::string>> result = parseFixMessage(fix);
 		if (result) {
-			//auto [price, quantity, is_buy, symbol] = result.value();
 			std::tuple<double, int, bool, std::string> res = result.value();
-
 			// Specifying return values using structured bindings
 			double price;
 			double quantity;
@@ -113,10 +112,8 @@ namespace hpx {
 		return -1;
 	}
 
+	// Belvedere's trading session
 	void send_orders_1(single_asset_book& q) {
-
-		//Belvedere's Trading
-		
 		trading_entity Belv = trading_entity::Belvedere;
 
 		std::string_view belv_trade_1 ="8=FIX.4.29=035=D49=83019956=AZKJ34=057=362052=20150406-12:17:2711=0c968e69-c3ff-4f9f-bc66-9e5ebccd980741=e0568b5c-8bb1-41f0-97bf-5eed32828c241=90964630055=SPX44=12.022=154=238=440=115=USD59=060=20150406-12:17:278201=1207=P10=0";
@@ -133,10 +130,9 @@ namespace hpx {
 		std::this_thread::sleep_for(10ms);
 		q.cancel(order_id, 12.1, buy_order_side);
 	}
-
+	
+	// Wolverine's trading session
 	void send_orders_2() {
-		//Wolverine's Trading 
-
 		trading_entity Wolv = trading_entity::Wolverine;
 
 		std::string_view wolv_trade_1 ="8=FIX.4.29=035=D49=83019956=AZKJ34=057=362052=20150406-12:17:2711=0c968e69-c3ff-4f9f-bc66-9e5ebccd980741=e0568b5c-8bb1-41f0-97bf-5eed32828c241=90964630055=SPX44=12.022=154=238=540=115=USD59=060=20150406-12:17:278201=1207=P10=0";
@@ -152,8 +148,8 @@ namespace hpx {
 		send_fix_order(wolv_trade_3, Wolv);
 	}
 
+	// Citadel's trading session
 	void send_orders_3() {
-		//Citadel's trading
 		trading_entity CitSec = trading_entity::Citadel;
 		std::this_thread::sleep_for(40ms);
 

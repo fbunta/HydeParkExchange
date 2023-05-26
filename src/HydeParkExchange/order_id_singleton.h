@@ -4,6 +4,7 @@
 using std::atomic;
 
 namespace hpx {
+    // this class generates sequential order id integers in a thread-safe way with atomics
     class order_id_singleton
     {
     protected:

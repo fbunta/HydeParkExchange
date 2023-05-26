@@ -16,7 +16,6 @@ using std::lock_guard;
 using std::scoped_lock;
 
 namespace hpx {
-    //template<typename T> // requires numeric type trait
     class level_queue {
     public:
         level_queue(double price) : price(price) {}
@@ -144,7 +143,8 @@ namespace hpx {
             }
         };
 
-        void push(unique_ptr<order> new_order) { // always push to the tail of the queue
+        // always push to the tail of the queue
+        void push(unique_ptr<order> new_order) {
             if ( side_to_string(new_order->side_) == "buy") {
                 const lock_guard<mutex> lock(buy_mtx);
                 shared_ptr<queue_item> new_item = make_shared<queue_item>(move(new_order));

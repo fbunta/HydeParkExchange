@@ -41,7 +41,6 @@ namespace hpx {
         }
     };
 
-    // each specialization of mystream obtains a unique index from xalloc()
     template<class CharT, class Traits>
     const int entity_stream<CharT, Traits>::entity_index = std::ios_base::xalloc();
 

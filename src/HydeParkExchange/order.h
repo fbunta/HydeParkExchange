@@ -1,7 +1,9 @@
 #ifndef ORDER_H
 #	define ORDER_H
 
+// if building in visual studio you must comment out the following line
 #define FMT_HEADER_ONLY
+
 #include "order_id_singleton.h"
 #include "fmt/format.h"
 #include <condition_variable>
@@ -128,8 +130,8 @@ namespace hpx {
 	inline ostream&
 	operator<<(ostream& os, order ord)
 	{
-		os << format("{}={} {} {} {} @ {}", ord.order_id_, order_status_to_string(ord.status_)
-			, entity_to_string(ord.trading_entity_), side_to_string(ord.side_), ord.quantity_, ord.price_);
+		os << format("{}={} {} {} @ {}", ord.order_id_, entity_to_string(ord.trading_entity_),
+			side_to_string(ord.side_), ord.quantity_, ord.price_);
 		return os;
 	}
 
